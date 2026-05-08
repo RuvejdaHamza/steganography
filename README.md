@@ -41,20 +41,20 @@ Kam implementuar **dy skripta Python**:
 
 ### Para ekzekutimit të projektit duhet të keni të instaluar:
 
-**Python 3**
-**Bibliotekën Pillow**
+-**Python 3**
+-**Bibliotekën Pillow**
 
 ## Instalimi
 
 Instaloni bibliotekën e nevojshme me komandën:
 
-pip install pillow
+-pip install pillow
 
 ### Përgatitja e imazhit
 
 Vendosni një imazh BMP me emrin **cover.bmp**  në të njëjtin folder me projektin.
 
-Nëse nuk keni imazh, mund të krijoni një automatikisht me këtë komandë:
+-Nëse nuk keni imazh, mund të krijoni një automatikisht me këtë komandë:
 
 python -c "from PIL import Image; Image.new('RGB', (800, 600), color=(100,150,200)).save('cover.bmp')"
 Përgatitja e mesazhit sekret
@@ -64,9 +64,13 @@ Ne file-in me emrin **secret.txt** shtoni mesazhin sekret brenda tij.
 ### Fshehja e mesazhit
 
 Për të fshehur mesazhin brenda imazhit, ekzekutoni **python embed.py**
-Pas ekzekutimit do të krijohet imazhi me mesazhin e fshehur.
+-Pas ekzekutimit do të krijohet imazhi me mesazhin e fshehur.
 
 ### Nxjerrja e mesazhit
 
 Për të nxjerrë mesazhin sekret nga imazhi, përdorni **python extract.py**
-Mesazhi sekret do të shfaqet në terminal.
+-Mesazhi sekret do të shfaqet në terminal.
+
+
+
+
