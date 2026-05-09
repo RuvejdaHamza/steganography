@@ -1,0 +1,35 @@
+cat > answers.txt << 'EOF'
+========================================
+PYETJET ME SHRIM - STEGANOGRAFIA
+========================================
+
+1. CAPACITY CALCULATIONS:
+----------------------------------------
+Për imazhin flowers.bmp (p.sh. 800x600):
+- Total piksela = 800 × 600 = 480,000 piksela
+- Secili piksel ruan 1 bit = 480,000 bit
+- Kapaciteti në karaktere = 480,000 / 7 = 68,571 karaktere
+- Mesazhi ynë ka 50 karaktere = 350 bit
+- Kapaciteti i përdorur = (350/480000) × 100 = 0.073%
+
+2. EXPERIMENT OBSERVATIONS:
+----------------------------------------
+- Imazhi para dhe pas fshehjes është vizualisht i njëjtë
+- Ndryshimi i LSB-së ndryshon vlerën e ngjyrës vetëm për ±1
+- Pa çelësin (key) e saktë, mesazhi nuk mund të nxirret
+- Steganografia është e suksesshme për BMP por jo për JPEG
+
+3. SHORT EXPLANATIONS:
+----------------------------------------
+Steganografia vs Kriptografia:
+- Kriptografia: e bën mesazhin të palexueshëm (ciphertext)
+- Steganografia: e fsheh ekzistencën e mesazhit brenda një mediumi tjetër
+- Kombinimi i të dyjave jep siguri maksimale
+
+LSB (Least Significant Bit):
+- Është biti i fundit i një numri 8-bitësh
+- Ndryshimi i tij ka ndikim minimal në vlerë
+- Përdoret për të fshehur informacion pa u vënë re
+
+========================================
+EOF
