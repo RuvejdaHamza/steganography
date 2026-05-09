@@ -1,91 +1,62 @@
-"""
-extract.py — Nxjerr mesazhin e fshehur nga imazhi stego.
-"""
-
 from PIL import Image
 import random
 
-# 1. KONFIGURIMI (TË NJËJTAT VIERA SI NË EMBED.PY)
+# Shared configuration
+key = 2026
+colour_plane = 1
+bit_position = 7
 
+stego_image = 'stego-image.bmp'
 
-key = 12345
-colourPlane = 0
-significantBit = 7
-stegoImage = "stego-image.bmp"
+# Open image
+img = Image.open(stego_image)
+pixels = img.load()
 
+width, height = img.size
+total_pixels = width * height
 
+# Rebuild shuffled index list
+indexes = list(range(total_pixels))
 
-# 2. LEXO IMAZHIN
-
-image = Image.open(stegoImage).convert("RGB")
-dimensions = image.size
-pixels = image.load()
-total_pixels = dimensions[0] * dimensions[1]
-
-
-# 3. RINDËRTO RENDITJEN E PIKELAVE
-
-
-shuffledIndices = list(range(total_pixels))
 random.seed(key)
-random.shuffle(shuffledIndices)
+random.shuffle(indexes)
 
+# Extract bits
+extracted_bits = []
 
+for i in range(total_pixels):
 
-# 4. LEXO 14 BITAT E PARË (GJATËSIA E MESAZHIT)
+    pixel_index = indexes[i]
 
-length_bits = []
-for i in range(14):
-    x = shuffledIndices[i] % dimensions[0]
-    y = shuffledIndices[i] // dimensions[0]
-    
-    colour_value = pixels[x, y][colourPlane]
-    p = format(colour_value, 'b').zfill(8)
-    length_bits.append(p[significantBit])
+    x = pixel_index % width
+    y = pixel_index // width
 
-length_bits_str = ''.join(length_bits)
-message_length = int(length_bits_str, 2)
+    pixel = pixels[x, y]
 
-print(f"Gjatësia e mesazhit: {message_length} karaktere")
+    channel_value = pixel[colour_plane]
 
+    binary_value = format(channel_value, '08b')
 
-# 5. LEXO BITAT E MESAZHIT
+    extracted_bits.append(binary_value[bit_position])
 
-message_bits = []
-start_index = 14
-num_bits_needed = message_length * 7
+# Recover message length
+length_bits = ''.join(extracted_bits[:14])
 
-for i in range(start_index, start_index + num_bits_needed):
-    x = shuffledIndices[i] % dimensions[0]
-    y = shuffledIndices[i] // dimensions[0]
-    
-    colour_value = pixels[x, y][colourPlane]
-    p = format(colour_value, 'b').zfill(8)
-    message_bits.append(p[significantBit])
+message_length = int(length_bits, 2)
 
+# Recover message bits
+message_bits = extracted_bits[14:14 + (message_length * 7)]
 
+# Decode message
+message = ''
 
-# 6. DEKODONO MESAZHIN
-
-
-message = ""
 for i in range(0, len(message_bits), 7):
-    byte_bits = ''.join(message_bits[i:i+7])
-    char_code = int(byte_bits, 2)
-    message += chr(char_code)
 
+    char_bits = ''.join(message_bits[i:i+7])
 
+    ascii_value = int(char_bits, 2)
 
-# 7. SHFAQO DHE RUAJ MESAZHIN
+    message += chr(ascii_value)
 
-
-print("\n" + "="*50)
-print("MESAZHI I FSHUR:")
-print("="*50)
+print("Recovered message:")
 print(message)
-print("="*50)
-
-with open("extracted_secret.txt", "w", encoding="utf-8") as f:
-    f.write(message)
-    
-print("\nMesazhi u ruajt edhe në 'extracted_secret.txt'")print("\nMesazhi u ruajt edhe në 'extracted_secret.txt'")

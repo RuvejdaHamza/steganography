@@ -1,116 +1,105 @@
-"""
-embed.py — Fsheh një mesazh tekst brenda një imazhi bitmap.
-"""
-
 from PIL import Image
 import random
 
+# Shared configuration
+key = 2026
+colour_plane = 1       # 0 = red, 1 = green, 2 = blue
+bit_position = 7       # 7 = least significant bit
 
-# 1. KONFIGURIMI
-
-
-key = 12345                    # Çelësi për randomizim
-colourPlane = 0                # 0=kuqe, 1=gjelbër, 2=blu
-significantBit = 7             # 7=biti më pak i rëndësishëm (LSB)
-coverImage = "img/flowers.bmp"       # Imazhi origjinal
-secretFile = "secret.txt"      # Mesazhi sekret
-outputImage = "stego-image.bmp" # Imazhi me mesazh të fshehur
+cover_image = 'img/flowers.bmp'
+secret_file = 'secret.txt'
+output_image = 'stego-image.bmp'
 
 
+# Modify selected pixel bit
+def modify_pixel(pixel, plane, bit_position, direction):
+    change = direction * (2 ** (7 - bit_position))
 
-# 2. LEXO IMAZHIN DHE MESAZHIN
+    red = pixel[0] + change if plane == 0 else pixel[0]
+    green = pixel[1] + change if plane == 1 else pixel[1]
+    blue = pixel[2] + change if plane == 2 else pixel[2]
 
-
-image = Image.open(coverImage).convert("RGB")
-dimensions = image.size
-pixels = image.load()
-
-with open(secretFile, "r", encoding="utf-8") as f:
-    secret = f.read()
-
-# ============================================================
-# 3. KONTROLLO KAPACITETIN
-# ============================================================
-
-total_pixels = dimensions[0] * dimensions[1]
-
-# Llogaritja e kapacitetit 
-print("="*50)
-print("LLOGARITJA E KAPACITETIT")
-print("="*50)
-print(f"Përmasat e imazhit: {dimensions[0]} x {dimensions[1]} = {total_pixels} piksela")
-print(f"Secili piksel ruan 1 bit = {total_pixels} bit")
-print(f"Kapaciteti në karaktere: {total_pixels // 7} karaktere")
-print(f"Gjatësia e mesazhit tonë: {len(secret)} karaktere")
-print(f"Bitat e nevojshme: {len(bits)} bit")
-print(f"Kapaciteti i përdorur: {(len(bits)/total_pixels)*100:.2f}%")
-print("="*50)
-# 7 bit për çdo karakter (ASCII)
-sbits = ''.join(format(ord(char), 'b').zfill(7) for char in secret)
-
-# 14 bit për gjatësinë e mesazhit (max 16383 karaktere)
-lbits = format(len(secret), 'b').zfill(14)
-
-# Bashko bitat
-bits = lbits + sbits
-
-if len(bits) > total_pixels:
-    print(f"Gabim: Nevojiten {len(bits)} bit, por kemi vetëm {total_pixels} piksela.")
-    exit(1)
-
-print(f"Po fshehim {len(bits)} bit ({len(secret)} karaktere) në {total_pixels} piksela...")
+    return (red, green, blue)
 
 
+# Open image
+img = Image.open(cover_image).convert("RGB")
+pixels = img.load()
 
-# 4. RENDITJA E RASTËSISHME E PIKELAVE
+width, height = img.size
+total_pixels = width * height
 
+# Create shuffled pixel order
+indexes = list(range(total_pixels))
 
-shuffledIndices = list(range(total_pixels))
 random.seed(key)
-random.shuffle(shuffledIndices)
+random.shuffle(indexes)
 
+# Read secret message
+with open(secret_file, 'r') as file:
+    secret_message = file.read()
 
+message_length = len(secret_message)
 
-# 5. FUNKSIONI PËR MODIFIKIMIN E PIKSELEVE
+# Convert length to 14-bit binary
+length_bits = format(message_length, '014b')
 
+# Convert message to 7-bit ASCII
+message_bits = ''
 
-def modify_pixel(pixel, plane, bit, modifier):
-    """
-    Ndryshon një plan ngjyre të një pikseli.
-    
-    pixel: tuple (R, G, B)
-    plane: 0=kuqe, 1=gjelbër, 2=blu
-    bit: pozita e bitit (7=LSB)
-    modifier: +1 ose -1 (rrit ose ul vlerën)
-    """
-    m = modifier * (2 ** (7 - bit))
-    
-    r = pixel[0] + m if plane == 0 else pixel[0]
-    g = pixel[1] + m if plane == 1 else pixel[1]
-    b = pixel[2] + m if plane == 2 else pixel[2]
-    
-    return (r, g, b)
+for char in secret_message:
+    message_bits += format(ord(char), '07b')
 
+# Full bit stream
+all_bits = length_bits + message_bits
 
+# Capacity check
+if len(all_bits) > total_pixels:
+    raise ValueError("Message is too large for this image.")
 
-# 6. FSHIH BITAT NË IMAZH
+# Embed bits
+for i, bit in enumerate(all_bits):
 
-for i in range(len(bits)):
-    x = shuffledIndices[i] % dimensions[0]
-    y = shuffledIndices[i] // dimensions[0]
-    
-    p = format(pixels[x, y][colourPlane], 'b').zfill(8)
-    
-    if p[significantBit] == '0' and bits[i] == '1':
-        pixels[x, y] = modify_pixel(pixels[x, y], colourPlane, significantBit, 1)
-    elif p[significantBit] == '1' and bits[i] == '0':
-        pixels[x, y] = modify_pixel(pixels[x, y], colourPlane, significantBit, -1)
+    pixel_index = indexes[i]
 
+    x = pixel_index % width
+    y = pixel_index // width
 
+    pixel = pixels[x, y]
 
-# 7. RUAJ IMAZHIN
+    # Select colour channel
+    channel_value = pixel[colour_plane]
 
+    # Convert to binary
+    binary_value = format(channel_value, '08b')
 
-image.save(outputImage)
-print(f"Fshehja u krye. Imazhi u ruajt si: {outputImage}")
+    # Current bit in selected position
+    current_bit = binary_value[bit_position]
 
+    # If bit already correct, continue
+    if current_bit == bit:
+        continue
+
+    # Decide direction
+    if bit == '1':
+        direction = 1
+    else:
+        direction = -1
+
+    # Prevent overflow
+    if channel_value == 255:
+        direction = -1
+
+    if channel_value == 0:
+        direction = 1
+
+    # Modify pixel
+    new_pixel = modify_pixel(pixel, colour_plane, bit_position, direction)
+
+    pixels[x, y] = new_pixel
+
+# Save stego image
+img.save(output_image)
+
+print("Message embedded successfully!")
+print("Saved as:", output_image)

@@ -1,7 +1,6 @@
-cat > answers.txt << 'EOF'
-========================================
+
+
 PYETJET ME SHRIM - STEGANOGRAFIA
-========================================
 
 1. CAPACITY CALCULATIONS:
 ----------------------------------------
@@ -31,5 +30,4 @@ LSB (Least Significant Bit):
 - Ndryshimi i tij ka ndikim minimal në vlerë
 - Përdoret për të fshehur informacion pa u vënë re
 
-========================================
-EOF
+
