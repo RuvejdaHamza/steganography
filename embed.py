@@ -12,7 +12,7 @@ import random
 key = 12345                    # Çelësi për randomizim
 colourPlane = 0                # 0=kuqe, 1=gjelbër, 2=blu
 significantBit = 7             # 7=biti më pak i rëndësishëm (LSB)
-coverImage = "cover.bmp"       # Imazhi origjinal
+coverImage = "img/flowers.bmp"       # Imazhi origjinal
 secretFile = "secret.txt"      # Mesazhi sekret
 outputImage = "stego-image.bmp" # Imazhi me mesazh të fshehur
 
@@ -34,6 +34,17 @@ with open(secretFile, "r", encoding="utf-8") as f:
 
 total_pixels = dimensions[0] * dimensions[1]
 
+# Llogaritja e kapacitetit 
+print("="*50)
+print("LLOGARITJA E KAPACITETIT")
+print("="*50)
+print(f"Përmasat e imazhit: {dimensions[0]} x {dimensions[1]} = {total_pixels} piksela")
+print(f"Secili piksel ruan 1 bit = {total_pixels} bit")
+print(f"Kapaciteti në karaktere: {total_pixels // 7} karaktere")
+print(f"Gjatësia e mesazhit tonë: {len(secret)} karaktere")
+print(f"Bitat e nevojshme: {len(bits)} bit")
+print(f"Kapaciteti i përdorur: {(len(bits)/total_pixels)*100:.2f}%")
+print("="*50)
 # 7 bit për çdo karakter (ASCII)
 sbits = ''.join(format(ord(char), 'b').zfill(7) for char in secret)
 
